@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>System One · MCP Tool Routing</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="view-leader">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">S1</div>
+      <div>
+        <div class="title">System One Tool Routing</div>
+        <div class="subtitle">Laya decides which MCP tools Claude should see, before Claude reads them</div>
+      </div>
+    </div>
+    <div class="top-right">
+      <div class="chips" id="status-chips"></div>
+      <div class="seg" id="view-toggle">
+        <button data-view="leader" class="active">Leader view</button>
+        <button data-view="engineer">Engineer view</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1><span id="hero-tools">85</span> MCP tools across <span id="hero-servers">13</span> servers.<br />
+        Should the LLM read every one of them on every request?</h1>
+      <p class="realnote"><span class="pill real">real</span> <b id="hero-real">25</b> tool definitions come from the live
+        <b>Playwright</b> MCP server. <span class="pill mock">mock</span> The other
+        <b id="hero-mock">81</b> simulate systems with no server connected. Tool <i>calls</i> are simulated for both, so nothing touches a real system.</p>
+      <p>Each request runs twice. <b>Without System One</b>, Claude receives the full tool catalog.
+        <b>With System One</b>, a small local decision model (Laya) picks the few relevant tools in milliseconds,
+        and Claude only sees those. If the shortlist misses, Claude can load the tools of any other server it needs.</p>
+    </section>
+
+    <nav class="tabs" id="tabs">
+      <button data-tab="live" class="active">Live comparison</button>
+      <button data-tab="bench">Benchmark</button>
+      <button data-tab="catalog">Tool catalog</button>
+    </nav>
+
+    <!-- LIVE -->
+    <section id="tab-live" class="tab active">
+      <div class="card composer">
+        <textarea id="prompt" rows="2" placeholder="Ask something an enterprise assistant would get…"></textarea>
+        <div class="composer-row">
+          <div class="scenario-chips" id="scenario-chips"></div>
+        </div>
+        <div class="composer-row end">
+          <div class="controls eng-only">
+            <label>Strategy
+              <select id="strategy"></select>
+            </label>
+            <label>Top-K tools
+              <input id="topk" type="number" min="1" max="20" value="6" />
+            </label>
+          </div>
+          <button class="primary" id="run-btn">Run comparison</button>
+        </div>
+      </div>
+
+      <div id="live-empty" class="empty">Pick a scenario or type a request, then run the comparison.</div>
+      <div id="live-result" class="hidden">
+        <div class="pipeline" id="pipeline"></div>
+        <div class="kpis" id="live-kpis"></div>
+        <div class="grid2">
+          <div class="card mode baseline" id="card-baseline"></div>
+          <div class="card mode routed" id="card-routed"></div>
+        </div>
+        <div class="card eng-only" id="decision-card"></div>
+      </div>
+    </section>
+
+    <!-- BENCHMARK -->
+    <section id="tab-bench" class="tab">
+      <div class="card bench-head">
+        <div>
+          <h3>Run every scenario, with and without System One</h3>
+          <p class="muted"><span id="bench-count">16</span> realistic requests from engineers, SREs, analysts and leaders,
+            each with a known correct tool. That gives <span id="bench-calls">32</span> agent runs against Claude on Vertex.</p>
+        </div>
+        <button class="primary" id="bench-btn">Run benchmark</button>
+      </div>
+      <div class="progress hidden" id="bench-progress"><div class="bar" id="bench-bar"></div><span id="bench-label"></span></div>
+      <div id="bench-summary" class="hidden">
+        <div class="kpis" id="bench-kpis"></div>
+        <div class="grid2">
+          <div class="card" id="bench-bars"></div>
+          <div class="card" id="projection"></div>
+        </div>
+      </div>
+      <div class="card hidden" id="bench-table-card">
+        <table class="table" id="bench-table">
+          <thead><tr>
+            <th>Scenario</th><th>Expected tool</th>
+            <th class="num">Tokens (all tools → S1)</th><th class="num">Latency (all tools → S1)</th>
+            <th class="num">Cost (all tools → S1)</th><th>Correct</th><th class="eng-only">S1 picked</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CATALOG -->
+    <section id="tab-catalog" class="tab">
+      <div class="servers" id="servers"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>System One: <a href="https://github.com/NandhaKishorM/laya" target="_blank">Laya</a> (local, on-device) · LLM: Claude on Vertex AI · real MCP tool definitions, simulated tool results</span>
+  </footer>
+  <script src="/static/app.js"></script>
+</body>
+</html>
